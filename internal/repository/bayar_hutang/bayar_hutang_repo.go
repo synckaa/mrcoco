@@ -8,9 +8,9 @@ import (
 )
 
 type BayarHutangRepository interface {
-	FindAll(offset, limit int, startDate, endDate, supplierID, noTransaksi string) ([]bayarhutangmodel.DataBayarHutang, int64, error)
+	FindAll(offset, limit int, tanggalAwal, tanggalAkhir, supplierID, gudangID, rekeningID, noTransaksi string) ([]bayarhutangmodel.DataBayarHutang, int64, error)
 	FindByID(id uint) (*bayarhutangmodel.DataBayarHutang, error)
-	Count(startDate, endDate, supplierID, noTransaksi string) (int64, error)
+	Count(tanggalAwal, tanggalAkhir, supplierID, gudangID, rekeningID, noTransaksi string) (int64, error)
 	Create(bayarHutang *bayarhutangmodel.DataBayarHutang) error
 	Update(bayarHutang *bayarhutangmodel.DataBayarHutang) error
 	Delete(id uint) error
@@ -28,12 +28,12 @@ func NewBayarHutangRepository(db *gorm.DB) BayarHutangRepository {
 	return &bayarHutangRepository{db: db}
 }
 
-func (r *bayarHutangRepository) FindAll(offset, limit int, startDate, endDate, supplierID, noTransaksi string) ([]bayarhutangmodel.DataBayarHutang, int64, error) {
+func (r *bayarHutangRepository) FindAll(offset, limit int, tanggalAwal, tanggalAkhir, supplierID, gudangID, rekeningID, noTransaksi string) ([]bayarhutangmodel.DataBayarHutang, int64, error) {
 	var bayarHutangs []bayarhutangmodel.DataBayarHutang
 	var total int64
 
 	query := r.db.Model(&bayarhutangmodel.DataBayarHutang{})
-	query = r.applyFilters(query, startDate, endDate, supplierID, noTransaksi)
+	query = r.applyFilters(query, tanggalAwal, tanggalAkhir, supplierID, gudangID, rekeningID, noTransaksi)
 	query.Count(&total)
 
 	err := query.Preload("Supplier").Preload("Gudang").Preload("Rekening").Preload("Items").Preload("Items.Pembelian").
@@ -49,10 +49,10 @@ func (r *bayarHutangRepository) FindByID(id uint) (*bayarhutangmodel.DataBayarHu
 	return &bayarHutang, err
 }
 
-func (r *bayarHutangRepository) Count(startDate, endDate, supplierID, noTransaksi string) (int64, error) {
+func (r *bayarHutangRepository) Count(tanggalAwal, tanggalAkhir, supplierID, gudangID, rekeningID, noTransaksi string) (int64, error) {
 	var count int64
 	query := r.db.Model(&bayarhutangmodel.DataBayarHutang{})
-	query = r.applyFilters(query, startDate, endDate, supplierID, noTransaksi)
+	query = r.applyFilters(query, tanggalAwal, tanggalAkhir, supplierID, gudangID, rekeningID, noTransaksi)
 	err := query.Count(&count).Error
 	return count, err
 }
@@ -99,15 +99,22 @@ func (r *bayarHutangRepository) UpdatePembelianSisa(pembelianID uint, sisa int) 
 	return r.db.Model(&pembelianmodel.DataPembelian{}).Where("id = ?", pembelianID).Update("jumlah_uang_sisa", sisa).Error
 }
 
-func (r *bayarHutangRepository) applyFilters(query *gorm.DB, startDate, endDate, supplierID, noTransaksi string) *gorm.DB {
-	if startDate != "" {
-		query = query.Where("tanggal >= ?", startDate)
-	}
-	if endDate != "" {
-		query = query.Where("tanggal <= ?", endDate)
+func (r *bayarHutangRepository) applyFilters(query *gorm.DB, tanggalAwal, tanggalAkhir, supplierID, gudangID, rekeningID, noTransaksi string) *gorm.DB {
+	if tanggalAwal != "" && tanggalAkhir != "" {
+		query = query.Where("tanggal >= ? AND tanggal <= ?", tanggalAwal, tanggalAkhir)
+	} else if tanggalAwal != "" {
+		query = query.Where("tanggal = ?", tanggalAwal)
+	} else if tanggalAkhir != "" {
+		query = query.Where("tanggal = ?", tanggalAkhir)
 	}
 	if supplierID != "" {
 		query = query.Where("supplier_id = ?", supplierID)
+	}
+	if gudangID != "" {
+		query = query.Where("gudang_id = ?", gudangID)
+	}
+	if rekeningID != "" {
+		query = query.Where("rekening_id = ?", rekeningID)
 	}
 	if noTransaksi != "" {
 		query = query.Where("no_transaksi ILIKE ?", "%"+noTransaksi+"%")

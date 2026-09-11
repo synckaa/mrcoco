@@ -1,16 +1,16 @@
 package repository
 
 import (
-	pembelianmodel "mrcoco/internal/models/pembelian"
 	bayarhutangmodel "mrcoco/internal/models/bayar_hutang"
+	pembelianmodel "mrcoco/internal/models/pembelian"
 
 	"gorm.io/gorm"
 )
 
 type PembelianRepository interface {
-	FindAll(offset, limit int, startDate, endDate, supplierID, noTransaksi string) ([]pembelianmodel.DataPembelian, int64, error)
+	FindAll(offset, limit int, tanggalAwal, tanggalAkhir, jatuhTempoAwal, jatuhTempoAkhir, supplierID, gudangID, rekeningID, noTransaksi string) ([]pembelianmodel.DataPembelian, int64, error)
 	FindByID(id uint) (*pembelianmodel.DataPembelian, error)
-	Count(startDate, endDate, supplierID, noTransaksi string) (int64, error)
+	Count(tanggalAwal, tanggalAkhir, jatuhTempoAwal, jatuhTempoAkhir, supplierID, gudangID, rekeningID, noTransaksi string) (int64, error)
 	Create(pembelian *pembelianmodel.DataPembelian) error
 	Update(pembelian *pembelianmodel.DataPembelian) error
 	Delete(id uint) error
@@ -25,12 +25,12 @@ func NewPembelianRepository(db *gorm.DB) PembelianRepository {
 	return &pembelianRepository{db: db}
 }
 
-func (r *pembelianRepository) FindAll(offset, limit int, startDate, endDate, supplierID, noTransaksi string) ([]pembelianmodel.DataPembelian, int64, error) {
+func (r *pembelianRepository) FindAll(offset, limit int, tanggalAwal, tanggalAkhir, jatuhTempoAwal, jatuhTempoAkhir, supplierID, gudangID, rekeningID, noTransaksi string) ([]pembelianmodel.DataPembelian, int64, error) {
 	var pembelians []pembelianmodel.DataPembelian
 	var total int64
 
 	query := r.db.Model(&pembelianmodel.DataPembelian{})
-	query = r.applyFilters(query, startDate, endDate, supplierID, noTransaksi)
+	query = r.applyFilters(query, tanggalAwal, tanggalAkhir, jatuhTempoAwal, jatuhTempoAkhir, supplierID, gudangID, rekeningID, noTransaksi)
 	query.Count(&total)
 
 	err := query.Preload("Supplier").Preload("Gudang").Preload("Rekening").Preload("Items").
@@ -46,10 +46,10 @@ func (r *pembelianRepository) FindByID(id uint) (*pembelianmodel.DataPembelian, 
 	return &pembelian, err
 }
 
-func (r *pembelianRepository) Count(startDate, endDate, supplierID, noTransaksi string) (int64, error) {
+func (r *pembelianRepository) Count(tanggalAwal, tanggalAkhir, jatuhTempoAwal, jatuhTempoAkhir, supplierID, gudangID, rekeningID, noTransaksi string) (int64, error) {
 	var count int64
 	query := r.db.Model(&pembelianmodel.DataPembelian{})
-	query = r.applyFilters(query, startDate, endDate, supplierID, noTransaksi)
+	query = r.applyFilters(query, tanggalAwal, tanggalAkhir, jatuhTempoAwal, jatuhTempoAkhir, supplierID, gudangID, rekeningID, noTransaksi)
 	err := query.Count(&count).Error
 	return count, err
 }
@@ -78,18 +78,32 @@ func (r *pembelianRepository) DeleteItemsByPembelianID(pembelianID uint) error {
 	return r.db.Where("pembelian_id = ?", pembelianID).Delete(&pembelianmodel.DataPembelianItem{}).Error
 }
 
-func (r *pembelianRepository) applyFilters(query *gorm.DB, startDate, endDate, supplierID, noTransaksi string) *gorm.DB {
-	if startDate != "" {
-		query = query.Where("tanggal >= ?", startDate)
+func (r *pembelianRepository) applyFilters(query *gorm.DB, tanggalAwal, tanggalAkhir, jatuhTempoAwal, jatuhTempoAkhir, supplierID, gudangID, rekeningID, noTransaksi string) *gorm.DB {
+	if tanggalAwal != "" && tanggalAkhir != "" {
+		query = query.Where("data_pembelian.tanggal >= ? AND data_pembelian.tanggal <= ?", tanggalAwal, tanggalAkhir)
+	} else if tanggalAwal != "" {
+		query = query.Where("data_pembelian.tanggal = ?", tanggalAwal)
+	} else if tanggalAkhir != "" {
+		query = query.Where("data_pembelian.tanggal = ?", tanggalAkhir)
 	}
-	if endDate != "" {
-		query = query.Where("tanggal <= ?", endDate)
+	if jatuhTempoAwal != "" && jatuhTempoAkhir != "" {
+		query = query.Where("data_pembelian.tgl_jatuh_tempo >= ? AND data_pembelian.tgl_jatuh_tempo <= ?", jatuhTempoAwal, jatuhTempoAkhir)
+	} else if jatuhTempoAwal != "" {
+		query = query.Where("data_pembelian.tgl_jatuh_tempo = ?", jatuhTempoAwal)
+	} else if jatuhTempoAkhir != "" {
+		query = query.Where("data_pembelian.tgl_jatuh_tempo = ?", jatuhTempoAkhir)
 	}
 	if supplierID != "" {
-		query = query.Where("supplier_id = ?", supplierID)
+		query = query.Where("data_pembelian.supplier_id = ?", supplierID)
+	}
+	if gudangID != "" {
+		query = query.Where("data_pembelian.gudang_id = ?", gudangID)
+	}
+	if rekeningID != "" {
+		query = query.Where("data_pembelian.rekening_id = ?", rekeningID)
 	}
 	if noTransaksi != "" {
-		query = query.Where("no_transaksi ILIKE ?", "%"+noTransaksi+"%")
+		query = query.Where("data_pembelian.no_transaksi ILIKE ?", "%"+noTransaksi+"%")
 	}
 	return query
 }

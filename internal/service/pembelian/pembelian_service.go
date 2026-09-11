@@ -10,9 +10,9 @@ import (
 )
 
 type PembelianService interface {
-	GetAll(offset, limit int, startDate, endDate, supplierID, noTransaksi string) ([]pembelianmodel.DataPembelian, int64, error)
+	GetAll(offset, limit int, tanggalAwal, tanggalAkhir, jatuhTempoAwal, jatuhTempoAkhir, supplierID, gudangID, rekeningID, noTransaksi string) ([]pembelianmodel.DataPembelian, int64, error)
 	GetByID(id uint) (*pembelianmodel.DataPembelian, error)
-	Count(startDate, endDate, supplierID, noTransaksi string) (int64, error)
+	Count(tanggalAwal, tanggalAkhir, jatuhTempoAwal, jatuhTempoAkhir, supplierID, gudangID, rekeningID, noTransaksi string) (int64, error)
 	Create(pembelian *pembelianmodel.DataPembelian) error
 	Update(id uint, pembelian *pembelianmodel.DataPembelian) error
 	Delete(id uint) error
@@ -28,16 +28,16 @@ func NewPembelianService(repo repository.PembelianRepository, db *gorm.DB) Pembe
 	return &pembelianService{repo: repo, db: db}
 }
 
-func (s *pembelianService) GetAll(offset, limit int, startDate, endDate, supplierID, noTransaksi string) ([]pembelianmodel.DataPembelian, int64, error) {
-	return s.repo.FindAll(offset, limit, startDate, endDate, supplierID, noTransaksi)
+func (s *pembelianService) GetAll(offset, limit int, tanggalAwal, tanggalAkhir, jatuhTempoAwal, jatuhTempoAkhir, supplierID, gudangID, rekeningID, noTransaksi string) ([]pembelianmodel.DataPembelian, int64, error) {
+	return s.repo.FindAll(offset, limit, tanggalAwal, tanggalAkhir, jatuhTempoAwal, jatuhTempoAkhir, supplierID, gudangID, rekeningID, noTransaksi)
 }
 
 func (s *pembelianService) GetByID(id uint) (*pembelianmodel.DataPembelian, error) {
 	return s.repo.FindByID(id)
 }
 
-func (s *pembelianService) Count(startDate, endDate, supplierID, noTransaksi string) (int64, error) {
-	return s.repo.Count(startDate, endDate, supplierID, noTransaksi)
+func (s *pembelianService) Count(tanggalAwal, tanggalAkhir, jatuhTempoAwal, jatuhTempoAkhir, supplierID, gudangID, rekeningID, noTransaksi string) (int64, error) {
+	return s.repo.Count(tanggalAwal, tanggalAkhir, jatuhTempoAwal, jatuhTempoAkhir, supplierID, gudangID, rekeningID, noTransaksi)
 }
 
 func (s *pembelianService) Create(pembelian *pembelianmodel.DataPembelian) error {

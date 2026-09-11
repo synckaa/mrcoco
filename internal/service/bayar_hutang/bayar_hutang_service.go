@@ -12,9 +12,9 @@ import (
 )
 
 type BayarHutangService interface {
-	GetAll(offset, limit int, startDate, endDate, supplierID, noTransaksi string) ([]bayarhutangmodel.DataBayarHutang, int64, error)
+	GetAll(offset, limit int, tanggalAwal, tanggalAkhir, supplierID, gudangID, rekeningID, noTransaksi string) ([]bayarhutangmodel.DataBayarHutang, int64, error)
 	GetByID(id uint) (*bayarhutangmodel.DataBayarHutang, error)
-	Count(startDate, endDate, supplierID, noTransaksi string) (int64, error)
+	Count(tanggalAwal, tanggalAkhir, supplierID, gudangID, rekeningID, noTransaksi string) (int64, error)
 	Create(bayarHutang *bayarhutangmodel.DataBayarHutang) error
 	Update(id uint, bayarHutang *bayarhutangmodel.DataBayarHutang) error
 	Delete(id uint) error
@@ -32,16 +32,16 @@ func NewBayarHutangService(repo repository.BayarHutangRepository, db *gorm.DB) B
 	return &bayarHutangService{repo: repo, db: db}
 }
 
-func (s *bayarHutangService) GetAll(offset, limit int, startDate, endDate, supplierID, noTransaksi string) ([]bayarhutangmodel.DataBayarHutang, int64, error) {
-	return s.repo.FindAll(offset, limit, startDate, endDate, supplierID, noTransaksi)
+func (s *bayarHutangService) GetAll(offset, limit int, tanggalAwal, tanggalAkhir, supplierID, gudangID, rekeningID, noTransaksi string) ([]bayarhutangmodel.DataBayarHutang, int64, error) {
+	return s.repo.FindAll(offset, limit, tanggalAwal, tanggalAkhir, supplierID, gudangID, rekeningID, noTransaksi)
 }
 
 func (s *bayarHutangService) GetByID(id uint) (*bayarhutangmodel.DataBayarHutang, error) {
 	return s.repo.FindByID(id)
 }
 
-func (s *bayarHutangService) Count(startDate, endDate, supplierID, noTransaksi string) (int64, error) {
-	return s.repo.Count(startDate, endDate, supplierID, noTransaksi)
+func (s *bayarHutangService) Count(tanggalAwal, tanggalAkhir, supplierID, gudangID, rekeningID, noTransaksi string) (int64, error) {
+	return s.repo.Count(tanggalAwal, tanggalAkhir, supplierID, gudangID, rekeningID, noTransaksi)
 }
 
 func (s *bayarHutangService) Create(bayarHutang *bayarhutangmodel.DataBayarHutang) error {

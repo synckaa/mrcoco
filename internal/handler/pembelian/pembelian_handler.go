@@ -21,12 +21,16 @@ func NewPembelianHandler(service service.PembelianService) *PembelianHandler {
 
 func (h *PembelianHandler) GetAll(c *gin.Context) {
 	pagination := helper.GetPagination(c)
-	startDate := c.Query("start_date")
-	endDate := c.Query("end_date")
+	tanggalAwal := c.Query("tanggal_awal")
+	tanggalAkhir := c.Query("tanggal_akhir")
+	jatuhTempoAwal := c.Query("jatuh_tempo_awal")
+	jatuhTempoAkhir := c.Query("jatuh_tempo_akhir")
 	supplierID := c.Query("supplier_id")
+	gudangID := c.Query("gudang_id")
+	rekeningID := c.Query("rekening_id")
 	noTransaksi := c.Query("no_transaksi")
 
-	data, total, err := h.service.GetAll(pagination.Offset, pagination.Limit, startDate, endDate, supplierID, noTransaksi)
+	data, total, err := h.service.GetAll(pagination.Offset, pagination.Limit, tanggalAwal, tanggalAkhir, jatuhTempoAwal, jatuhTempoAkhir, supplierID, gudangID, rekeningID, noTransaksi)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -51,12 +55,16 @@ func (h *PembelianHandler) GetByID(c *gin.Context) {
 }
 
 func (h *PembelianHandler) Count(c *gin.Context) {
-	startDate := c.Query("start_date")
-	endDate := c.Query("end_date")
+	tanggalAwal := c.Query("tanggal_awal")
+	tanggalAkhir := c.Query("tanggal_akhir")
+	jatuhTempoAwal := c.Query("jatuh_tempo_awal")
+	jatuhTempoAkhir := c.Query("jatuh_tempo_akhir")
 	supplierID := c.Query("supplier_id")
+	gudangID := c.Query("gudang_id")
+	rekeningID := c.Query("rekening_id")
 	noTransaksi := c.Query("no_transaksi")
 
-	count, err := h.service.Count(startDate, endDate, supplierID, noTransaksi)
+	count, err := h.service.Count(tanggalAwal, tanggalAkhir, jatuhTempoAwal, jatuhTempoAkhir, supplierID, gudangID, rekeningID, noTransaksi)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

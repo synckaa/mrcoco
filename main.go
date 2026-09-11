@@ -4,9 +4,10 @@ import (
 	"log"
 
 	"mrcoco/internal/config/database"
+	"mrcoco/internal/models/bayar_hutang"
 	"mrcoco/internal/models/masterdata"
 	"mrcoco/internal/models/pembelian"
-	"mrcoco/internal/models/bayar_hutang"
+	preOrderModel "mrcoco/internal/models/pre_order"
 	"mrcoco/internal/routes"
 
 	"gorm.io/gorm"
@@ -43,6 +44,8 @@ func runMigrations(db *gorm.DB) {
 		&pembelian.DataPembelianItem{},
 		&bayar_hutang.DataBayarHutang{},
 		&bayar_hutang.DataBayarHutangItem{},
+		&preOrderModel.DataPreOrder{},
+		&preOrderModel.DataPreOrderItem{},
 	)
 	if err != nil {
 		log.Fatalf("Failed to run migrations: %v", err)

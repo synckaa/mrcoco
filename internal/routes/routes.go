@@ -5,12 +5,15 @@ import (
 	bayarHutangHandler "mrcoco/internal/handler/bayar_hutang"
 	"mrcoco/internal/handler/masterdata"
 	pembelianHandler "mrcoco/internal/handler/pembelian"
+	preOrderHandler "mrcoco/internal/handler/pre_order"
 	bayarHutangRepo "mrcoco/internal/repository/bayar_hutang"
 	"mrcoco/internal/repository/masterdata"
 	pembelianRepo "mrcoco/internal/repository/pembelian"
+	preOrderRepo "mrcoco/internal/repository/pre_order"
 	bayarHutangService "mrcoco/internal/service/bayar_hutang"
 	"mrcoco/internal/service/masterdata"
 	pembelianService "mrcoco/internal/service/pembelian"
+	preOrderService "mrcoco/internal/service/pre_order"
 
 	"github.com/gin-gonic/gin"
 )
@@ -33,6 +36,7 @@ func SetupRoutes() *gin.Engine {
 	gudangRepo := repository.NewGudangRepository(db)
 	pembelianRepoInstance := pembelianRepo.NewPembelianRepository(db)
 	bayarHutangRepoInstance := bayarHutangRepo.NewBayarHutangRepository(db)
+	preOrderRepoInstance := preOrderRepo.NewPreOrderRepository(db)
 
 	satuanService := service.NewSatuanService(satuanRepo, db)
 	kategoriService := service.NewKategoriService(kategoriRepo, db)
@@ -47,6 +51,7 @@ func SetupRoutes() *gin.Engine {
 	gudangService := service.NewGudangService(gudangRepo, db)
 	pembelianServiceInstance := pembelianService.NewPembelianService(pembelianRepoInstance, db)
 	bayarHutangServiceInstance := bayarHutangService.NewBayarHutangService(bayarHutangRepoInstance, db)
+	preOrderServiceInstance := preOrderService.NewPreOrderService(preOrderRepoInstance, db)
 
 	satuanHandler := handler.NewSatuanHandler(satuanService)
 	kategoriHandler := handler.NewKategoriHandler(kategoriService)
@@ -61,6 +66,7 @@ func SetupRoutes() *gin.Engine {
 	gudangHandler := handler.NewGudangHandler(gudangService)
 	pembelianHandlerInstance := pembelianHandler.NewPembelianHandler(pembelianServiceInstance)
 	bayarHutangHandlerInstance := bayarHutangHandler.NewBayarHutangHandler(bayarHutangServiceInstance)
+	preOrderHandlerInstance := preOrderHandler.NewPreOrderHandler(preOrderServiceInstance)
 
 	api := r.Group("/api")
 	{
@@ -207,6 +213,16 @@ func SetupRoutes() *gin.Engine {
 			bayarHutang.POST("", bayarHutangHandlerInstance.Create)
 			bayarHutang.PUT("/:id", bayarHutangHandlerInstance.Update)
 			bayarHutang.DELETE("/:id", bayarHutangHandlerInstance.Delete)
+		}
+
+		preOrder := api.Group("/pre-order")
+		{
+			preOrder.GET("", preOrderHandlerInstance.GetAll)
+			preOrder.GET("/total", preOrderHandlerInstance.Count)
+			preOrder.GET("/:id", preOrderHandlerInstance.GetByID)
+			preOrder.POST("", preOrderHandlerInstance.Create)
+			preOrder.PUT("/:id", preOrderHandlerInstance.Update)
+			preOrder.DELETE("/:id", preOrderHandlerInstance.Delete)
 		}
 	}
 

@@ -21,12 +21,14 @@ func NewBayarHutangHandler(service service.BayarHutangService) *BayarHutangHandl
 
 func (h *BayarHutangHandler) GetAll(c *gin.Context) {
 	pagination := helper.GetPagination(c)
-	startDate := c.Query("start_date")
-	endDate := c.Query("end_date")
+	tanggalAwal := c.Query("tanggal_awal")
+	tanggalAkhir := c.Query("tanggal_akhir")
 	supplierID := c.Query("supplier_id")
+	gudangID := c.Query("gudang_id")
+	rekeningID := c.Query("rekening_id")
 	noTransaksi := c.Query("no_transaksi")
 
-	data, total, err := h.service.GetAll(pagination.Offset, pagination.Limit, startDate, endDate, supplierID, noTransaksi)
+	data, total, err := h.service.GetAll(pagination.Offset, pagination.Limit, tanggalAwal, tanggalAkhir, supplierID, gudangID, rekeningID, noTransaksi)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -51,12 +53,14 @@ func (h *BayarHutangHandler) GetByID(c *gin.Context) {
 }
 
 func (h *BayarHutangHandler) Count(c *gin.Context) {
-	startDate := c.Query("start_date")
-	endDate := c.Query("end_date")
+	tanggalAwal := c.Query("tanggal_awal")
+	tanggalAkhir := c.Query("tanggal_akhir")
 	supplierID := c.Query("supplier_id")
+	gudangID := c.Query("gudang_id")
+	rekeningID := c.Query("rekening_id")
 	noTransaksi := c.Query("no_transaksi")
 
-	count, err := h.service.Count(startDate, endDate, supplierID, noTransaksi)
+	count, err := h.service.Count(tanggalAwal, tanggalAkhir, supplierID, gudangID, rekeningID, noTransaksi)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
